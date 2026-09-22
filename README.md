@@ -13,13 +13,13 @@ Ziel ist wieder lexikografisch: erst möglichst viele Paare, dann minimale Koste
 ```
 greedy-matching-demo (Wurzel: eine gewählte Zuordnung bleibt)                     [gebaut]
   ├─ augmenting-path-demo (Verbesserungswege: Paare optimal, Kosten blind)        [gebaut]
-  │    ├─ Hopcroft–Karp                                                            [nicht gebaut]
+  │    ├─ hopcroft-karp-demo (viele kürzeste Wege je Phase)                       [gebaut]
   │    ├─ hungarian-demo (Ungarische Methode: Paare zuerst, dann Kosten)           [gebaut]
   │    │    └─ auction-algorithm-demo (Auktionsalgorithmus: dezentral)             [dieses Stück]
-  │    └─ Blossom                                                                  [nicht gebaut]
-  │   Ungarisch + Blossom → Gewichteter Blossom (Konvergenz)                       [nicht gebaut]
-  ├─ Gale–Shapley → Stabile Mitbewohner                                            [nicht gebaut]
-  └─ Online-Matching                                                               [nicht gebaut]
+  │    └─ blossom-demo (allgemeine Graphen: ungerade Kreise, Kontraktion)          [gebaut]
+  │        └─ weighted-blossom-demo (Ungarisch + Blossom, Konvergenz)              [gebaut]
+  ├─ Gale–Shapley → Stabile Mitbewohner, Krankenhaus-Zulassung, Top Trading Cycles, Nierentausch [gebaut]
+  └─ online-matching-demo (Aufträge kommen nacheinander)                          [gebaut]
 ```
 
 ## Ergebnis (Zahlen aus den Tests)

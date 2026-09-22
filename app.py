@@ -102,7 +102,7 @@ Der Preis dafür ist der **Preiskrieg**: bei fester kleiner Schrittweite streite
 st.caption(
     "Anders als die Fall-Demos im Portfolio, die an einem Anwendungsfall mehrere Verfahren vergleichen, zeigt diese Demo - viertes Stück der Matching-Linie der \"Konzepte\"-Reihe, Nachfolger der Ungarischen Methode - **ein** Verfahren an einem wachsenden Beispiel. "
     "Nicht zu verwechseln mit der Demo zu **kombinatorischen Auktionen** (Multi-Agenten-Linie): dort bieten Fahrzeuge auf Bündel von Aufträgen, hier auf einzelne Aufträge. "
-    "Die Schwächen dieses Stücks sind die Ansatzpunkte der nächsten: **Blossom** und **Gewichteter Blossom** (allgemeine Graphen), **Gale–Shapley** (Vorlieben statt Kosten) und **Online-Matching** - noch nicht gebaut. "
+    "Die Schwächen dieses Stücks sind die Ansatzpunkte der nächsten: **Blossom** und **Gewichteter Blossom** (allgemeine Graphen), **Gale–Shapley** (Vorlieben statt Kosten) und **Online-Matching** - alle inzwischen gebaut. "
     "Die Referenz \"Optimum\" ist die Ungarische Methode aus der Demo davor, deren Ergebnis zusätzlich in den Tests gegen scipy, networkx und Brute Force geprüft ist."
 )
 
@@ -413,7 +413,7 @@ st.markdown(
 | **Alles ist vorab bekannt** | Aufträge kommen hier alle vor der Auktion an. Kommen sie nacheinander und sind schon zugesagt, darf nicht mehr umgeboten werden. | **Online-Matching** |
 """
 )
-st.caption("Die Nachbarn der Matching-Linie (noch nicht gebaut): Hopcroft–Karp, Blossom, Gewichteter Blossom, Gale–Shapley, Stabile Mitbewohner und Online-Matching. Bereits gebaut: die Wurzel (Greedy-Matching), die Verbesserungswege, die Ungarische Methode und diese Demo.")
+st.caption("Die Matching-Linie ist inzwischen vollständig gebaut (13 Stücke): die Wurzel (Greedy-Matching), die Verbesserungswege, die Ungarische Methode, diese Demo, Hopcroft–Karp, Blossom, Gewichteter Blossom, Gale–Shapley, Stabile Mitbewohner, Krankenhaus-Zulassung, Top Trading Cycles, Nierentausch und Online-Matching.")
 
 st.markdown("---")
 
