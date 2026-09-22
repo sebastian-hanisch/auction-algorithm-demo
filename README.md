@@ -1,5 +1,7 @@
 # Auktionsalgorithmus – dezentral bieten statt zentral rechnen – Streamlit-Demo
 
+**[→ Demo live ausprobieren](https://sebastianhanisch-auction-algorithm-demo.streamlit.app/)**
+
 Viertes Stück der **Matching-Linie** der "Konzepte"-Reihe für die Website "Sebastian Hanisch – Operations Research und Machine Learning", Nachfolger der [Ungarischen Methode](https://github.com/sebastian-hanisch/hungarian-demo):
 anders als die Fall-Demos im Portfolio (ein Anwendungsfall, mehrere Verfahren im Vergleich) zeigt diese Demo **ein** Verfahren – den **Auktionsalgorithmus** (Bertsekas) – an einem wachsenden Beispiel.
 Die Ungarische Methode findet das billigste Matching mit den meisten Paaren, aber in einer **zentralen Rechnung**, die alle Kosten kennt. Hier kennt jedes Fahrzeug nur seine eigene Kostenzeile und die aktuellen Preise, bietet auf den Auftrag, der es inklusive Preis am wenigsten kostet, und hebt dessen Preis um den Vorsprung vor der zweitbesten Wahl plus ε an; wer überboten wird, sucht sich einen neuen Auftrag.
