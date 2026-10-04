@@ -383,7 +383,7 @@ if st.session_state.get("penalty_on") == (int(n), int(m), int(reach), int(ballun
     c1, c2 = st.columns([3, 2])
     c1.plotly_chart(build_penalty(pen_rows), width="stretch", key="penalty_chart")
     c2.table({"Strafe": [f"{r['factor']}×M" for r in pen_rows], "Gebote fest": [_int(r["fixed_bids"]) for r in pen_rows], "Gebote Skalierung": [_int(r["scaled_bids"]) for r in pen_rows]})
-    st.caption("M ist die kleinste sichere Strafe (min(n, m) × größte Fahrzeit + 1, n Fahrzeuge, m Aufträge): kleiner kann das Ergebnis Paare kosten (auf der langen Kette gibt M − 1 nur 6 statt 7 Paare). "
+    st.caption("M ist eine sichere Strafe (min(n, m) × größte Fahrzeit + 1, n Fahrzeuge, m Aufträge; hinreichend, nicht in jedem Fall die kleinstmögliche): zu klein gewählt kann das Ergebnis Paare kosten (auf der langen Kette gibt M − 1 nur 6 statt 7 Paare). "
                "Ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis, weil Fahrzeuge, die um zu wenige Aufträge streiten, bis zu diesem Preis hochbieten; die ε-Skalierung wächst kaum.")
 
 st.markdown("---")
@@ -429,7 +429,7 @@ with st.expander("📐 Mathematische Formulierung"):
         r"""
 **Modell.** Bipartiter Graph mit Fahrzeugen $V$ (die Bieter), Aufträgen $O$, möglichen Paaren $E$ und ganzzahligen Kosten $c_{ij}\ge 0$. Gesucht ist ein Matching mit größtmöglicher Paarzahl und darunter kleinsten Kosten.
 
-**Verzicht.** Jedes Fahrzeug $i$ hat einen privaten, nicht überbietbaren Ausweg mit Wert $-S M$; $S=n+1$ skaliert die Kosten, $M=\min(n,m)\,c_{\max}+1$. Dann ist das Problem ein gewöhnliches Zuordnungsproblem mit den Werten $a_{ij}=-S c_{ij}$ und der Gesamtwert eines Matchings ist $-S\,(c(M)+M\cdot\#\text{Verzichte})$: jedes zusätzliche Paar lohnt sich, weil $M>\min(n,m)\,c_{\max}$ größer ist als die Kosten aller Paare zusammen.
+**Verzicht.** Jedes Fahrzeug $i$ hat einen privaten, nicht überbietbaren Ausweg mit Wert $-S M$; $S=n+1$ skaliert die Kosten, $M=\min(n,m)\,c_{\max}+1$. Dann ist das Problem ein gewöhnliches Zuordnungsproblem mit den Werten $a_{ij}=-S c_{ij}$ und der Gesamtwert eines Matchings $\mu$ ist $-S\,(c(\mu)+M\cdot\#\text{Verzichte})$: jedes zusätzliche Paar lohnt sich, weil $M>\min(n,m)\,c_{\max}$ größer ist als die Kosten aller Paare zusammen.
 
 **Gebot.** Bei Preisen $p_j\ge 0$ ist der Wert von Auftrag $j$ für $i$ gleich $a_{ij}-p_j$, der beste $v_1$, der zweitbeste (einschließlich des Verzichts) $v_2$. Fahrzeug $i$ nimmt den besten Auftrag $j^*$ und setzt
 $$p_{j^*}\leftarrow p_{j^*}+(v_1-v_2)+\varepsilon,$$

@@ -249,7 +249,7 @@ def test_randomize_moves_the_seed_but_not_the_distribution():
 
 def test_experiments_run_on_demand():
     at = _run()
-    markers = ("Sequentiell, fest ε, Mittel über 100 feste Karten", "Mittel über 40 feste Karten je Reichweite", "M ist die kleinste sichere Strafe", "Gezählt werden **durchsuchte Kanten**")
+    markers = ("Sequentiell, fest ε, Mittel über 100 feste Karten", "Mittel über 40 feste Karten je Reichweite", "M ist eine sichere Strafe", "Gezählt werden **durchsuchte Kanten**")
     assert not any(any(m in c.value for m in markers) for c in at.caption)
     for key in ("eps_start", "sweep_start", "penalty_start", "scaling_start"):
         at.button(key=key).click()
