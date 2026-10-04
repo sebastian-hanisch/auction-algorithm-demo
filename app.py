@@ -96,7 +96,7 @@ st.markdown(
     """
 Die **Ungarische Methode** findet das billigste Matching mit den meisten Paaren - aber in einer **zentralen Rechnung**, die alle Kosten kennt. Der **Auktionsalgorithmus** (Bertsekas) löst dieselbe Aufgabe **dezentral**:
 jedes Fahrzeug kennt nur seine eigene Kostenzeile und die aktuellen Preise, bietet auf den Auftrag, der es inklusive Preis am wenigsten kostet, und hebt dessen Preis um den Vorsprung vor der zweitbesten Wahl plus ε an. Wer überboten wird, sucht sich einen neuen Auftrag.
-Ist die Schrittweite ε kleiner als 1/(n+1) Minute, ist das Ergebnis **exakt optimal** - auch hier "erst möglichst viele Paare, dann minimale Kosten".
+Ist die Schrittweite ε höchstens 1/(n+1) Minute, ist das Ergebnis **exakt optimal** - auch hier "erst möglichst viele Paare, dann minimale Kosten".
 Der Preis dafür ist der **Preiskrieg**: bei fester kleiner Schrittweite streiten Fahrzeuge in Mini-Schritten um denselben Auftrag; **ε-Skalierung** (grob anfangen, ε schrittweise verkleinern) macht das im Mittel um ein Vielfaches billiger.
 """
 )
@@ -113,9 +113,9 @@ with st.expander("So funktioniert der Auktionsalgorithmus", expanded=True):
 1. **Preise:** jeder Auftrag hat einen Preis, am Anfang 0. Ein Fahrzeug bewertet einen Auftrag mit **Anfahrtszeit + Preis** (kleiner ist besser).
 2. **Bieten:** ein Fahrzeug ohne Auftrag nimmt den Auftrag mit dem kleinsten Wert und bietet: der Preis steigt um den **Vorsprung** vor dem zweitbesten Auftrag **plus ε**. Der bisherige Halter wird **verdrängt** und bietet später neu.
 3. **Verzicht:** jedes Fahrzeug darf auf einen Auftrag verzichten, gegen eine hohe Strafe M (so groß, dass sich jedes zusätzliche Paar lohnt). Das macht "Paare zuerst" exakt und beendet den Streit um Aufträge, die nicht alle bekommen können.
-4. **ε:** je kleiner ε, desto genauer - bei ε < 1/(n+1) Minute exakt. Fest klein: viele kleine Preisschritte (**Preiskrieg**). **Skalierung:** mit großem ε anfangen, dann durch 5 teilen; am Ende jeder Phase werden die Preise nicht vergebener Aufträge wieder gesenkt (sonst ist das Ergebnis falsch).
+4. **ε:** je kleiner ε, desto genauer - bei ε ≤ 1/(n+1) Minute exakt. Fest klein: viele kleine Preisschritte (**Preiskrieg**). **Skalierung:** mit großem ε anfangen, dann durch 5 teilen; am Ende jeder Phase werden die Preise nicht vergebener Aufträge wieder gesenkt (sonst ist das Ergebnis falsch).
 5. **Nacheinander oder gleichzeitig:** ein Fahrzeug pro Schritt, oder alle Fahrzeuge ohne Auftrag in derselben Runde (das höchste Gebot je Auftrag gewinnt, die übrigen sind vergeblich).
-6. **Beweis:** aus dem Ergebnis allein folgt eine Schranke für den Abstand zum Optimum; bei ε < 1/(n+1) Minute ist er null.
+6. **Beweis:** aus dem Ergebnis allein folgt eine Schranke für den Abstand zum Optimum; bei ε ≤ 1/(n+1) Minute ist er null.
         """
     )
 
@@ -245,7 +245,7 @@ def _cert_table():
         ("E3 Freie Aufträge: Preis 0", f"{ok(cert['e3'])} {sc.m - res.count} freie(r) Auftrag/Aufträge"),
         ("E4 Jeder Auftrag höchstens ein Fahrzeug", f"{ok(cert['e4'])} {res.count} Paare, {res.n_idle} Verzicht(e)"),
         ("E5 Lücke G ≤ n·ε", f"{ok(cert['e5'])} G = {cert['g'] / S:.3g} min ≤ {cert['bound'] / S:.3g} min"),
-        ("Exakt garantiert (G < 1 Minute-Einheit)", ("✅ Die Lücke ist kleiner als eine Einheit (1/(n+1) Minute): das Ergebnis ist optimal." if cert["exact_guaranteed"]
+        ("Exakt garantiert (G < 1 Minute)", ("✅ Die Lücke ist kleiner als 1 Minute (eine Kosteneinheit): das Ergebnis ist optimal." if cert["exact_guaranteed"]
                                                         else f"⚠️ nein: das Ergebnis liegt höchstens {cert['gap_minutes_bound']:.3g} min über dem Optimum")),
     ]
     return {"Bedingung": [r[0] for r in rows], "Prüfung": [r[1] for r in rows]}
@@ -267,7 +267,7 @@ def _render(k):
             st.markdown("**Beweis:** aus dem Ergebnis allein folgt der Abstand zum Optimum")
             st.table(_cert_table())
             st.caption("Der Beweis kommt ohne die Ungarische Methode aus (schwache Dualität): jedes Fahrzeug liegt höchstens ε unter seiner besten Wahl, nicht vergebene Aufträge kosten nichts; daraus folgt, dass kein Matching mehr als G günstiger sein kann. "
-                       "Alle Werte sind Vielfache von 1/(n+1) Minute: bei G < 1 Einheit ist die Zuordnung optimal.")
+                       "Die Kosten sind ganze Minuten: bei G < 1 Minute ist die Zuordnung optimal.")
 
 
 if auto_play:
@@ -383,7 +383,7 @@ if st.session_state.get("penalty_on") == (int(n), int(m), int(reach), int(ballun
     c1, c2 = st.columns([3, 2])
     c1.plotly_chart(build_penalty(pen_rows), width="stretch", key="penalty_chart")
     c2.table({"Strafe": [f"{r['factor']}×M" for r in pen_rows], "Gebote fest": [_int(r["fixed_bids"]) for r in pen_rows], "Gebote Skalierung": [_int(r["scaled_bids"]) for r in pen_rows]})
-    st.caption("M ist die kleinste sichere Strafe (Anzahl möglicher Paare × größte Fahrzeit + 1): kleiner kann das Ergebnis Paare kosten (auf der langen Kette gibt M − 1 nur 6 statt 7 Paare). "
+    st.caption("M ist die kleinste sichere Strafe (min(n, m) × größte Fahrzeit + 1, n Fahrzeuge, m Aufträge): kleiner kann das Ergebnis Paare kosten (auf der langen Kette gibt M − 1 nur 6 statt 7 Paare). "
                "Ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis, weil Fahrzeuge, die um zu wenige Aufträge streiten, bis zu diesem Preis hochbieten; die ε-Skalierung wächst kaum.")
 
 st.markdown("---")
@@ -412,8 +412,8 @@ st.markdown(
     """
 | Annahme | Was passiert, wenn sie verletzt ist | Wer setzt an |
 |---|---|---|
-| **Die Strafe M ist groß genug, aber nicht zu groß** | Zu klein: das Ergebnis verliert Paare. Groß genug (M = möglich Paare × größte Fahrzeit + 1) ist bewiesen, aber ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis. | ε-Skalierung, oder ein Vorlauf, der die Paarzahl zuerst festlegt (Verbesserungswege) |
-| **ε ist klein genug** | Ein grobes ε ist schnell, aber nur noch fast optimal: die Lücke ist höchstens n·ε, gemessen weit darunter. Exakt ist es erst unter 1/(n+1) Minute - dafür ist die ε-Skalierung da. | ε-Skalierung, hier schon eingebaut |
+| **Die Strafe M ist groß genug, aber nicht zu groß** | Zu klein: das Ergebnis verliert Paare. Groß genug (M = min(n, m) × größte Fahrzeit + 1) ist bewiesen, aber ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis. | ε-Skalierung, oder ein Vorlauf, der die Paarzahl zuerst festlegt (Verbesserungswege) |
+| **ε ist klein genug** | Ein grobes ε ist schnell, aber nur noch fast optimal: die Lücke ist höchstens n·ε, gemessen weit darunter. Exakt ist es erst ab höchstens 1/(n+1) Minute - dafür ist die ε-Skalierung da. | ε-Skalierung, hier schon eingebaut |
 | **Preise werden an alle übermittelt** | Die Auktion ist dezentral in der Rechnung, aber jedes Fahrzeug muss die Preise seiner Aufträge kennen, und gleichzeitiges Bieten braucht gemeinsame Runden. Ohne Takt und ohne Preisübertragung gilt das Ergebnis so nicht. | asynchrone Auktionen, Nachrichtenverluste (nicht gebaut) |
 | **Es gibt zwei getrennte Seiten** | Fahrzeuge und Aufträge bilden zwei Gruppen. Sollen sich Fahrer untereinander paaren, gibt es Zyklen ungerader Länge. | **Blossom**, dann **Gewichteter Blossom** |
 | **Nur die Summe der Kosten zählt** | Die Auktion minimiert die Gesamtkosten und fragt nicht, ob ein Fahrzeug lieber einen anderen Auftrag hätte. Haben beide Seiten Vorlieben, ist ein stabiles Ergebnis oft teurer als dieses Optimum. | **Gale–Shapley**: der Preis der Stabilität gegen dieses Optimum |
@@ -455,6 +455,6 @@ st.markdown("---")
 
 st.caption(
     "Diese Demo ist Teil des Portfolios von [Sebastian Hanisch](https://sebastianhanisch.net) – "
-    "Operations Research und Machine Learning. Interesse an einer maßgeschneiderten Lösung für "
-    "Ihr Unternehmen? [Kontakt aufnehmen](https://sebastianhanisch.net/kontakt.html)"
+    "Operations Research und Machine Learning ([Über mich](https://sebastianhanisch.net/ueber-mich.html)). "
+    "Mehr zur Reihe: [Matching: von Greedy bis Nierentausch](https://sebastianhanisch.net/konzepte-matching.html)."
 )

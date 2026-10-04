@@ -296,7 +296,7 @@ def test_app_text_has_no_links_to_repository_files():
 
 def test_footer_is_verbatim():
     src = APP.read_text(encoding="utf-8")
-    assert "https://sebastianhanisch.net/kontakt.html" in src and "Interesse an einer maßgeschneiderten Lösung für" in src and "Operations Research und Machine Learning" in src
+    assert "https://sebastianhanisch.net/ueber-mich.html" in src and "Operations Research und Machine Learning" in src
 
 
 def test_runtime_needs_only_numpy_pandas_plotly_streamlit():

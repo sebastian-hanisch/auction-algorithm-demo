@@ -5,7 +5,7 @@
 Viertes Stück der **Matching-Linie** der "Konzepte"-Reihe für die Website "Sebastian Hanisch – Operations Research und Machine Learning", Nachfolger der [Ungarischen Methode](https://github.com/sebastian-hanisch/hungarian-demo):
 anders als die Fall-Demos im Portfolio (ein Anwendungsfall, mehrere Verfahren im Vergleich) zeigt diese Demo **ein** Verfahren – den **Auktionsalgorithmus** (Bertsekas) – an einem wachsenden Beispiel.
 Die Ungarische Methode findet das billigste Matching mit den meisten Paaren, aber in einer **zentralen Rechnung**, die alle Kosten kennt. Hier kennt jedes Fahrzeug nur seine eigene Kostenzeile und die aktuellen Preise, bietet auf den Auftrag, der es inklusive Preis am wenigsten kostet, und hebt dessen Preis um den Vorsprung vor der zweitbesten Wahl plus ε an; wer überboten wird, sucht sich einen neuen Auftrag.
-Ziel ist wieder lexikografisch: erst möglichst viele Paare, dann minimale Kosten. Ist ε kleiner als 1/(n+1) Minute, ist das Ergebnis **exakt optimal**.
+Ziel ist wieder lexikografisch: erst möglichst viele Paare, dann minimale Kosten. Ist ε höchstens 1/(n+1) Minute, ist das Ergebnis **exakt optimal**.
 
 **Nicht zu verwechseln** mit der Demo [auction-demo](https://github.com/sebastian-hanisch/auction-demo) (kombinatorische Auktionen, Multi-Agenten-Linie): dort bieten Fahrzeuge auf Bündel von Aufträgen, hier auf einzelne Aufträge, und die Aufgabe ist das klassische Zuordnungsproblem.
 
@@ -30,13 +30,13 @@ Jede hier genannte Zahl ist in `tests/test_claims.py` über die 100 festen Karte
 
 | Frage | Ergebnis |
 |---|---|
-| Ist das Ergebnis optimal? | ✅ Ja: alle vier Varianten (nacheinander/gleichzeitig × ε-Skalierung/fest, exaktes ε) treffen auf allen 100 Karten bei jeder Reichweite der Sweep-Reihe und bei Ballung 50 und 100 das Optimum der Ungarischen Methode; zusätzlich gegen scipy, networkx und Brute Force geprüft. Das Zertifikat (ε-Schlupf, Preise ≥ 0, unversorgte Aufträge bei 0, Lücke G < 1 Einheit) folgt aus dem Ergebnis allein und braucht die Ungarische Methode nicht. |
+| Ist das Ergebnis optimal? | ✅ Ja: alle vier Varianten (nacheinander/gleichzeitig × ε-Skalierung/fest, exaktes ε) treffen auf allen 100 Karten bei jeder Reichweite der Sweep-Reihe und bei Ballung 50 und 100 das Optimum der Ungarischen Methode; zusätzlich gegen scipy, networkx und Brute Force geprüft. Das Zertifikat (ε-Schlupf, Preise ≥ 0, unversorgte Aufträge bei 0, Lücke G < 1 Minute) folgt aus dem Ergebnis allein und braucht die Ungarische Methode nicht. |
 | Und der Aufwand gegen die Ungarische Methode? | ❌ Bei Reichweite 40 durchsucht die Auktion mit ε-Skalierung im Mittel 2 210 Kanten, die Ungarische Methode 1 698 (Faktor 1,3). Bei Reichweite 10 sind es 91 gegen 51; auf großen Karten (40 × 40, Reichweite 60) dreht es sich: 14 567 gegen 21 124 (0,69). Im Aufwand-Experiment (konstanter mittlerer Grad, 10 bis 320 Fahrzeuge) liegt die Skalierung bei 1,3 bis 1,6 mal so vielen Kanten, beide wachsen etwa quadratisch. |
 | Preiskrieg bei fester Schrittweite | ❌ Mit ε = 1/(n+1) Minute braucht die Auktion im Median 428, im **Mittel 3 036** Gebote (Verteilung stark rechtsschief, Ausreißer über 40 000), mit ε-Skalierung im Mittel 209: 14,5-mal so viele, auf 69 von 100 Karten mehr. Mehr Fahrzeuge als Aufträge (20 × 10): 1 677 gegen 80, auf allen 100 Karten. |
 | Wo die feste Schrittweite gewinnt | ✅ Bei knapper Reichweite (10): 9 Gebote und 13 durchsuchte Kanten gegen 19 und 91 mit Skalierung (und 51 bei der Ungarischen Methode). Bei mehr Aufträgen als Fahrzeugen (10 × 20): 16 gegen 56 Gebote. Der Preiskrieg tritt vor allem bei mittlerer Reichweite auf (Gipfel bei 40; bei 150 nur 1,9-mal so viele Gebote wie mit Skalierung). |
 | Grobes ε | ⚠️ Spart Gebote (Mittel 701 / 465 / 251 / 152 / 92 bei ε = 1 / 2 / 5 / 10 / 20 Minuten gegen 3 036 exakt), ist aber nur noch fast optimal: optimal auf 75 / 39 / 9 / 2 / 0 von 100 Karten, größte Lücke 3 / 7 / 32 / 44 / 84 Minuten gegen die garantierte Schranke n·ε = 20 / 40 / 100 / 200 / 400. Dass keine Paare verloren gehen, ist gemessen (0 auf allen Karten), nicht bewiesen. |
 | Gleichzeitig bieten | ⚠️ Weniger Runden (im Mittel 97) als Einzelgebote (209), dafür mehr Gebote insgesamt (268; 58 davon vergeblich, weil ein höheres Gebot auf denselben Auftrag gewinnt). |
-| Strafe für Verzicht | ⚠️ M = mögliche Paare × größte Fahrzeit + 1 ist bewiesen sicher; M − 1 kostet auf der langen Kette ein Paar (6 statt 7). Ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis (2 096 → 4 071 → 8 025 Gebote bei ×1, ×2, ×4), die Skalierung kaum (202 → 233 → 296). |
+| Strafe für Verzicht | ⚠️ M = min(n, m) × größte Fahrzeit + 1 ist bewiesen sicher; M − 1 kostet auf der langen Kette ein Paar (6 statt 7). Ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis (2 096 → 4 071 → 8 025 Gebote bei ×1, ×2, ×4), die Skalierung kaum (202 → 233 → 296). |
 | Die billigste Kante klaut (2 × 2) | ✅ 10 Minuten wie die Ungarische Methode (Greedy zahlt 18), in fünf Geboten; die Preise (71 und 68 in Drittelminuten) sind nur ein Nebenprodukt. |
 | Lange Kette | ✅ 70 Minuten; 20 Gebote in 4 Phasen mit Skalierung, 7 mit fester Schrittweite. |
 | Wie wächst der Aufwand? | ⚠️ Die feste Schrittweite wächst viel steiler: bei 80 Fahrzeugen über 4 Millionen durchsuchte Kanten gegen rund 32 000 mit Skalierung; sie wird deshalb im Experiment nur bis 80 Fahrzeuge gerechnet. |
@@ -100,3 +100,7 @@ venv\Scripts\python -m pytest tests -v
 
 Die Logik rechnet ausschließlich mit ganzen Zahlen; die im Text genannten Anteile und Mittelwerte sind deshalb auf jeder Plattform identisch.
 Die CI (`.github/workflows/tests.yml`) läuft auf Ubuntu mit Python 3.12, bei jedem Push und wöchentlich mit den jeweils neuesten Bibliotheksversionen.
+
+---
+
+Diese Demo ist Teil des Portfolios von [Sebastian Hanisch](https://sebastianhanisch.net) – Operations Research und Machine Learning ([Über mich](https://sebastianhanisch.net/ueber-mich.html)). Mehr zur Reihe: [Matching: von Greedy bis Nierentausch](https://sebastianhanisch.net/konzepte-matching.html).
