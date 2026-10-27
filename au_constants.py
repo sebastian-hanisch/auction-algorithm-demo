@@ -14,6 +14,8 @@ FIXED_NETS = ("steal", "p4", "paths", "chain")
 
 BID_LABELS = {"sequential": "Nacheinander", "simultaneous": "Gleichzeitig"}
 DEFAULT_BID = "sequential"
+LAYOUT_LABELS = {"map": "Karte", "bipartit": "Zwei Seiten"}
+DEFAULT_LAYOUT = "map"
 EPS_LABELS = {"scaled": "ε-Skalierung", "fixed": "Fest klein"}
 DEFAULT_EPS = "scaled"
 # feste Schrittweite in Minuten; 0 = exakt (1/(n+1) Minute, das Optimum ist garantiert)
@@ -35,7 +37,7 @@ COLORS = {"matched": "#1f77b4", "bid": "#2ca02c", "evicted": "#d62728", "vehicle
           "hungarian": "#d62728", "scaled": "#1f77b4", "fixed": "#ff7f0e", "sim": "#2ca02c"}
 
 # --- Presets ------------------------------------------------------------------------------------------------------------------
-_BASE = dict(net="random", bid=DEFAULT_BID, eps=DEFAULT_EPS, epsv=DEFAULT_EPSV, n=DEFAULT_N, m=DEFAULT_M, reach=DEFAULT_REACH, ballung=DEFAULT_BALLUNG, seed=DEFAULT_SEED)
+_BASE = dict(net="random", layout=DEFAULT_LAYOUT, bid=DEFAULT_BID, eps=DEFAULT_EPS, epsv=DEFAULT_EPSV, n=DEFAULT_N, m=DEFAULT_M, reach=DEFAULT_REACH, ballung=DEFAULT_BALLUNG, seed=DEFAULT_SEED)
 PRESETS = {
     "⚖️ Die billigste Kante klaut": {**_BASE, "net": "steal"},
     "⛓️ Lange Kette": {**_BASE, "net": "chain"},

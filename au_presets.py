@@ -37,6 +37,7 @@ def _epsv(value):
 
 SETTING_SPECS = {
     "net_select": SettingSpec("net", _choice(C.NETS), C.DEFAULT_NET),
+    "layout_radio": SettingSpec("layout", _choice(C.LAYOUT_LABELS), C.DEFAULT_LAYOUT),
     "bid_radio": SettingSpec("bid", _choice(C.BID_LABELS), C.DEFAULT_BID),
     "eps_radio": SettingSpec("eps", _choice(C.EPS_LABELS), C.DEFAULT_EPS),
     "epsv_select": SettingSpec("epsv", _epsv, C.DEFAULT_EPSV),
@@ -46,7 +47,7 @@ SETTING_SPECS = {
     "ballung_slider": SettingSpec("ballung", int, C.DEFAULT_BALLUNG, C.BALLUNG_MIN, C.BALLUNG_MAX),
     "seed_input": SettingSpec("seed", int, C.DEFAULT_SEED, 0, C.SEED_MAX),
 }
-PRESET_KEYS = {"net": "net_select", "bid": "bid_radio", "eps": "eps_radio", "epsv": "epsv_select", "n": "n_slider", "m": "m_slider", "reach": "reach_slider", "ballung": "ballung_slider", "seed": "seed_input"}
+PRESET_KEYS = {"net": "net_select", "layout": "layout_radio", "bid": "bid_radio", "eps": "eps_radio", "epsv": "epsv_select", "n": "n_slider", "m": "m_slider", "reach": "reach_slider", "ballung": "ballung_slider", "seed": "seed_input"}
 # Regler, die bei festen Karten ausgeblendet sind: Streamlit löscht ihren Zustand, sobald sie nicht gezeichnet werden - der zuletzt gewählte Wert bleibt hier erhalten
 # (der Schrittweiten-Regler erscheint nur bei fester Schrittweite und gehört deshalb auch dazu)
 KEPT = {key: f"_kept_{key}" for key in ("n_slider", "m_slider", "reach_slider", "ballung_slider", "seed_input", "epsv_select")}

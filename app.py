@@ -110,6 +110,8 @@ st.caption(
 with st.expander("So funktioniert der Auktionsalgorithmus", expanded=True):
     st.markdown(
         """
+**Der Graph.** Fahrzeuge und Aufträge sind die **Ecken**, ein mögliches Paar (das Fahrzeug erreicht den Auftrag in der Reichweite) ist eine **Kante**. Es gibt **zwei Seiten**: Kanten laufen immer von einem Fahrzeug zu einem Auftrag, nie von Fahrzeug zu Fahrzeug oder von Auftrag zu Auftrag. Einen solchen Graphen nennt man **bipartit**. Auf der Karte liegen beide Seiten gemischt; unter **Darstellung → Zwei Seiten** stehen die Fahrzeuge links und die Aufträge rechts, und man sieht, dass jede Kante die Seite wechselt.
+
 1. **Preise:** jeder Auftrag hat einen Preis, am Anfang 0. Ein Fahrzeug bewertet einen Auftrag mit **Anfahrtszeit + Preis** (kleiner ist besser).
 2. **Bieten:** ein Fahrzeug ohne Auftrag nimmt den Auftrag mit dem kleinsten Wert und bietet: der Preis steigt um den **Vorsprung** vor dem zweitbesten Auftrag **plus ε**. Der bisherige Halter wird **verdrängt** und bietet später neu.
 3. **Verzicht:** jedes Fahrzeug darf auf einen Auftrag verzichten, gegen eine hohe Strafe M (so groß, dass sich jedes zusätzliche Paar lohnt). Das macht "Paare zuerst" exakt und beendet den Streit um Aufträge, die nicht alle bekommen können.
@@ -205,9 +207,11 @@ if st.session_state.get("au_step_owner") != params:
     st.session_state["au_step_owner"] = params
 with step_col:
     step = st.slider("Schritt", 0, n_events, key="au_step", help="Wie viele Ereignisse (Phasenwechsel, Gebote, Verzichte, Preissenkungen) schon abgelaufen sind. Ganz rechts das fertige Ergebnis und der Beweis.")
+    layout = st.radio("Darstellung", list(C.LAYOUT_LABELS), key="layout_radio", format_func=lambda k: C.LAYOUT_LABELS[k], horizontal=True,
+                      help="Karte: Fahrzeuge und Aufträge liegen dort, wo sie auf der Karte sind. Zwei Seiten: dieselben Fahrzeuge links, dieselben Aufträge rechts, jede Kante läuft von einer Seite zur anderen - ein bipartiter Graph. Preise, Gebote und Paare sind in beiden Darstellungen dieselben.")
 with play_col:
     auto_play = st.button("▶️ Abspielen", width="stretch")
-sync_query_params({"net_select": net_key, "bid_radio": bid, "eps_radio": eps, "epsv_select": int(epsv), "n_slider": int(n), "m_slider": int(m), "reach_slider": int(reach),
+sync_query_params({"net_select": net_key, "layout_radio": layout, "bid_radio": bid, "eps_radio": eps, "epsv_select": int(epsv), "n_slider": int(n), "m_slider": int(m), "reach_slider": int(reach),
                    "ballung_slider": int(ballung), "seed_input": int(seed)})
 S = res.scale
 p_max = max(res.counters["max_price"] / S, 1)
@@ -258,7 +262,7 @@ def _render(k):
         ev_k = res.events[k - 1] if k > 0 else None
         c1, c2 = st.columns([3, 2])
         c1.markdown(f"**Nach {k} von {n_events} Ereignissen** - " + ("Anfang: alle Preise 0, kein Fahrzeug hat einen Auftrag." if k == 0 else _event_text(ev_k)))
-        c1.plotly_chart(build_auction_map(sc, st_k, p_max, S, ev_k), width="stretch", key=f"auction_map_{k}")
+        c1.plotly_chart(build_auction_map(sc, st_k, p_max, S, ev_k, layout=layout), width="stretch", key=f"auction_map_{k}")
         c2.markdown("**Verlauf**")
         c2.plotly_chart(build_progress(unassigned, price_sum, k, phase_marks), width="stretch", key=f"progress_chart_{k}")
         lo = max(0, k - 7)
@@ -281,7 +285,8 @@ else:
 
 if eps == "scaled" and len(res.counters["bids_by_phase"]) > 1:
     st.plotly_chart(build_phases(res.counters["bids_by_phase"], [e / S for e in res.eps_schedule]), width="stretch", key="phase_chart")
-st.caption("Orangefarbene Kreise sind Aufträge (Größe und Farbe: Preis in Minuten; leer = frei), Quadrate Fahrzeuge (grün: haben einen Auftrag, violett umrandet: verzichtet, grau: bieten noch), blaue Linien die aktuelle Zuordnung. "
+st.caption("In der Darstellung „Zwei Seiten“ stehen die Fahrzeuge links und die Aufträge rechts (innerhalb jeder Spalte nach Lage der möglichen Partner geordnet, damit sich wenige Kanten kreuzen); Preise und Gebote sind dieselben wie auf der Karte. "
+           "Orangefarbene Kreise sind Aufträge (Größe und Farbe: Preis in Minuten; leer = frei), Quadrate Fahrzeuge (grün: haben einen Auftrag, violett umrandet: verzichtet, grau: bieten noch), blaue Linien die aktuelle Zuordnung. "
            "Das letzte Ereignis ist hervorgehoben: grüne Linie = Gebot, roter Ring = verdrängtes Fahrzeug, violetter Ring = Verzicht oder Preissenkung (gestrichelt: der Übernehmer). "
            "Im Verlauf: rote Treppe = Fahrzeuge ohne Auftrag, orange = Summe der Preise, senkrechte Striche = Phasenwechsel. "
            "Die Preise steigen weit über jede Fahrzeit hinaus, bis Verzichten billiger ist als Überbieten: sie sind Zertifikate für das Ergebnis, keine Grenzkosten wie bei der Ungarischen Methode.")
@@ -415,7 +420,7 @@ st.markdown(
 | **Die Strafe M ist groß genug, aber nicht zu groß** | Zu klein: das Ergebnis verliert Paare. Groß genug (M = min(n, m) × größte Fahrzeit + 1) ist bewiesen, aber ein größeres M verlängert den Preiskrieg der festen Schrittweite etwa im gleichen Verhältnis. | ε-Skalierung, oder ein Vorlauf, der die Paarzahl zuerst festlegt (Verbesserungswege) |
 | **ε ist klein genug** | Ein grobes ε ist schnell, aber nur noch fast optimal: die Lücke ist höchstens n·ε, gemessen weit darunter. Exakt ist es erst ab höchstens 1/(n+1) Minute - dafür ist die ε-Skalierung da. | ε-Skalierung, hier schon eingebaut |
 | **Preise werden an alle übermittelt** | Die Auktion ist dezentral in der Rechnung, aber jedes Fahrzeug muss die Preise seiner Aufträge kennen, und gleichzeitiges Bieten braucht gemeinsame Runden. Ohne Takt und ohne Preisübertragung gilt das Ergebnis so nicht. | asynchrone Auktionen, Nachrichtenverluste (nicht gebaut) |
-| **Es gibt zwei getrennte Seiten** | Fahrzeuge und Aufträge bilden zwei Gruppen. Sollen sich Fahrer untereinander paaren, gibt es Zyklen ungerader Länge. | **Blossom**, dann **Gewichteter Blossom** |
+| **Der Graph ist bipartit (zwei Seiten)** | Kanten gibt es nur zwischen Fahrzeugen und Aufträgen. Soll dagegen jeder mit jedem gepaart werden können, etwa zwei Fahrer, die gemeinsam eine Fahrt übernehmen, kann es Kreise ungerader Länge geben (drei Fahrer, die einander alle erreichen); das Bieten um Aufträge behandelt sie nicht. | **Blossom**, dann **Gewichteter Blossom** |
 | **Nur die Summe der Kosten zählt** | Die Auktion minimiert die Gesamtkosten und fragt nicht, ob ein Fahrzeug lieber einen anderen Auftrag hätte. Haben beide Seiten Vorlieben, ist ein stabiles Ergebnis oft teurer als dieses Optimum. | **Gale–Shapley**: der Preis der Stabilität gegen dieses Optimum |
 | **Alles ist vorab bekannt** | Aufträge kommen hier alle vor der Auktion an. Kommen sie nacheinander und sind schon zugesagt, darf nicht mehr umgeboten werden. | **Online-Matching** |
 """

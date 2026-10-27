@@ -11,7 +11,7 @@ Ziel ist wieder lexikografisch: erst möglichst viele Paare, dann minimale Koste
 
 **Zwei Umschalter, deren Vergleich der Kern der Demo ist:** *Gebote* (nacheinander: ein Fahrzeug pro Schritt; gleichzeitig: alle Fahrzeuge ohne Auftrag in derselben Runde, wie es dezentral wirklich liefe) und *Schrittweite ε* (ε-Skalierung: mit großem ε anfangen und schrittweise verkleinern; fest klein: sofort exakt, aber ein langer **Preiskrieg**; oder fest grob: schnell, aber nur noch fast optimal).
 
-**Einordnung in die Reihe (die Kanten des Graphen):** dieses Stück löst die Zentralität der Ungarischen Methode. Seine eigenen Schwächen sind die Ansatzpunkte der nächsten: es gibt nur zwei getrennte Seiten (**Blossom → Gewichteter Blossom**), Kosten statt Vorlieben (**Gale–Shapley**), alles ist vorab bekannt (**Online-Matching**).
+**Einordnung in die Reihe (die Kanten des Graphen):** dieses Stück löst die Zentralität der Ungarischen Methode. Seine eigenen Schwächen sind die Ansatzpunkte der nächsten: der Graph hat nur zwei Seiten, er ist bipartit (**Blossom → Gewichteter Blossom**), Kosten statt Vorlieben (**Gale–Shapley**), alles ist vorab bekannt (**Online-Matching**).
 ```
 greedy-matching-demo (Wurzel: eine gewählte Zuordnung bleibt)                     [gebaut]
   ├─ augmenting-path-demo (Verbesserungswege: Paare optimal, Kosten blind)        [gebaut]
@@ -55,6 +55,7 @@ Jede hier genannte Zahl ist in `tests/test_claims.py` über die 100 festen Karte
 
 - **Die Auktion in Aktion:** Schritt-Slider und ▶️ über alle Ereignisse (Phasenwechsel, Gebote, Verzichte, Preissenkungen), Umschalter für Gebotsart und Schrittweite. Die Karte zeigt Preise als Größe und Farbe der Aufträge, das aktuelle Gebot, das verdrängte Fahrzeug; daneben der Verlauf und ein Ereignisprotokoll. Im letzten Schritt der **Beweis** (Tabelle E1–E5 mit echten Zahlen).
 - **Optimal – und was kostet das?** Ergebnis gegen die Ungarische Methode, Vergleichstabelle der vier Varianten, Verteilung über 100 feste Karten (Histogramm, Mittel und Median), Aufwandstabelle. Auf Abruf: Schrittweiten-Sweep, Reichweite-Sweep, Strafe M ×1/×2/×4, Aufwand-Experiment (10 bis 320 Fahrzeuge).
+- **Zwei Darstellungen desselben Graphen:** als Karte oder als **bipartiter Graph** (Fahrzeuge links, Aufträge rechts, jede Kante wechselt die Seite); Preise, Gebote und Paare sind in beiden dieselben.
 - **Feste Lehrbuchkarten** (2 × 2, lange Kette) und zufällige Karten; **Wo die Annahmen enden:** welches spätere Stück an welcher Schwäche ansetzt.
 
 ## Modell und Verfahren

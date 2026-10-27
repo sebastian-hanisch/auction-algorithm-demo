@@ -2,6 +2,7 @@
 Achsen sind gesperrt (fixedrange), damit Touch-Geräte beim Scrollen nicht zoomen. Punkte auf einer Geraden werden mit Bögen gezeichnet."""
 
 import math
+from dataclasses import replace
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -18,6 +19,50 @@ def lock_axes(fig):
 def _base(fig, height):
     fig.update_layout(height=height, margin=dict(l=10, r=10, t=10, b=10), legend=dict(orientation="h", y=-0.08), plot_bgcolor="rgba(0,0,0,0)")
     return lock_axes(fig)
+
+
+def _two_sided_order(sc, sweeps=4):
+    """Reihenfolge der Ecken in den beiden Spalten (oben nach unten): Start nach Kartenlage, dann abwechselnd jede Seite nach dem Mittel der Plätze ihrer möglichen Partner (weniger Kreuzungen)."""
+    vo = sorted(range(sc.n), key=lambda i: (sc.vehicles[i][1], sc.vehicles[i][0], i))
+    oo = sorted(range(sc.m), key=lambda j: (sc.orders[j][1], sc.orders[j][0], j))
+    for _ in range(sweeps):
+        pv = {i: r for r, i in enumerate(vo)}
+        keys = {}
+        for j in oo:
+            nb = [pv[i] for i in range(sc.n) if sc.feasible[i, j]]
+            keys[j] = sum(nb) / len(nb) if nb else oo.index(j) * (sc.n - 1) / max(sc.m - 1, 1)
+        oo = sorted(oo, key=lambda j: (keys[j], j))
+        po = {j: r for r, j in enumerate(oo)}
+        keys = {}
+        for i in vo:
+            nb = [po[j] for j in range(sc.m) if sc.feasible[i, j]]
+            keys[i] = sum(nb) / len(nb) if nb else vo.index(i) * (sc.m - 1) / max(sc.n - 1, 1)
+        vo = sorted(vo, key=lambda i: (keys[i], i))
+    return vo, oo
+
+
+def arrange(sc, layout):
+    """Karte unverändert; Darstellung "bipartit": Fahrzeuge links, Aufträge rechts, in je einer Spalte. Nur die Koordinaten ändern sich, Kosten und Paare bleiben dieselben."""
+    if layout != "bipartit":
+        return sc
+    vo, oo = _two_sided_order(sc)
+
+    def column(order, x):
+        k = len(order)
+        pos = {e: (x, 100 - 100 * r / (k - 1) if k > 1 else 50) for r, e in enumerate(order)}
+        return tuple(pos[e] for e in range(k))
+
+    return replace(sc, vehicles=column(vo, 0), orders=column(oo, 100))
+
+
+def _small(sc, layout):
+    """Beschriften wir die Ecken? Auf der Karte bis 24 Ecken, in den Spalten bis 20 je Seite."""
+    return max(sc.n, sc.m) <= 20 if layout == "bipartit" else sc.n + sc.m <= 24
+
+
+def _tpos(layout, map_pos, side):
+    """Beschriftungsposition: auf der Karte oben bzw. unten, in den Spalten außen neben der Ecke."""
+    return {"vehicle": "middle left", "order": "middle right"}[side] if layout == "bipartit" else map_pos
 
 
 def _collinear(sc):
@@ -53,7 +98,13 @@ def _feasible_pairs(sc):
     return [(i, j) for i in range(sc.n) for j in range(sc.m) if sc.feasible[i, j]]
 
 
-def _map_layout(fig, sc, height):
+def _map_layout(fig, sc, height, layout="map"):
+    if layout == "bipartit":
+        fig.update_xaxes(visible=False, range=[-32, 132])
+        fig.update_yaxes(visible=False, range=[-6, 116])
+        for x, text in ((0, "Fahrzeuge"), (100, "Aufträge")):
+            fig.add_annotation(x=x, y=110, text=f"<b>{text}</b>", showarrow=False)
+        return _base(fig, max(height, min(800, 22 * max(sc.n, sc.m) + 110)))
     xs = [p[0] for p in sc.vehicles + sc.orders]
     ys = [p[1] for p in sc.vehicles + sc.orders]
     pad = 8
@@ -82,10 +133,11 @@ def _pair_lines(fig, sc, curved, pairs, color, width, name, dash=None):
     fig.add_trace(go.Scatter(x=x, y=y, mode="lines", line=dict(color=color, width=width, dash=dash), hoverinfo="skip", name=name))
 
 
-def build_auction_map(sc, state, p_max, S, event=None, height=430):
+def build_auction_map(sc, state, p_max, S, event=None, height=430, layout="map"):
     """Karte im Zustand `state`: Aufträge nach Preis (Größe und Farbe, Minuten), gewählte Paare blau, Verzichter violett umrandet;
     das aktuelle Ereignis hervorgehoben (Gebot grün, Verdrängter rot umringt, Preissenkung mit Übernahme gestrichelt)."""
-    curved = _collinear(sc)
+    sc = arrange(sc, layout)
+    curved = layout != "bipartit" and _collinear(sc)
     fig = go.Figure()
     ex, ey = _segments(sc, _feasible_pairs(sc), curved)
     fig.add_trace(go.Scatter(x=ex, y=ey, mode="lines", line=dict(color="rgba(150,150,150,0.3)", width=1), hoverinfo="skip", name="mögliche Paare"))
@@ -107,9 +159,9 @@ def build_auction_map(sc, state, p_max, S, event=None, height=430):
             ring.append(("Auftrag", j, C.COLORS["idle"], "Preis gesenkt"))
             if taker >= 0:
                 _pair_lines(fig, sc, curved, [(taker, j)], C.COLORS["idle"], 5, "übernimmt", dash="dash")
-    small = sc.n + sc.m <= 24
+    small = _small(sc, layout)
     vmax = max(p_max, 1)
-    for kind, pts, symbol, prefix, tpos in (("Fahrzeug", sc.vehicles, "square", "F", "top center"), ("Auftrag", sc.orders, "circle", "A", "bottom center")):
+    for kind, pts, symbol, prefix, tpos in (("Fahrzeug", sc.vehicles, "square", "F", _tpos(layout, "top center", "vehicle")), ("Auftrag", sc.orders, "circle", "A", _tpos(layout, "bottom center", "order"))):
         if kind == "Fahrzeug":
             groups = (("zugeordnet", [k for k in range(sc.n) if assign[k] >= 0], "#2e7d32", symbol),
                       ("verzichtet", [k for k in range(sc.n) if assign[k] < 0 and idle[k]], C.COLORS["idle"], symbol + "-open"),
@@ -133,7 +185,7 @@ def build_auction_map(sc, state, p_max, S, event=None, height=430):
     for kind, k, color, name in ring:
         pt = sc.vehicles[k] if kind == "Fahrzeug" else sc.orders[k]
         fig.add_trace(go.Scatter(x=[pt[0]], y=[pt[1]], mode="markers", name=name, hoverinfo="skip", marker=dict(symbol="circle-open", size=28, color=color, line=dict(width=3, color=color))))
-    fig = _map_layout(fig, sc, height)
+    fig = _map_layout(fig, sc, height, layout)
     fig.update_layout(showlegend=False)          # die Legende würde in schmalen Spalten die Zeichenfläche auf fast null drücken; die Farben stehen in der Erklärung unter der Karte
     return fig
 
